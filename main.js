@@ -50,7 +50,7 @@ function readTextFile(FileName) {
   xhr.onreadystatechange = function() {
     if (xhr.readyState === XMLHttpRequest.DONE) {
       if (xhr.status === 200) {
-        let allText = rawFile.responseText;
+        let allText = xhr.responseText;
         loadOBJfile(allText);
       } else {
         console.log('Hubo un problema al leer el documento.');
@@ -363,4 +363,4 @@ function animate(timeNow) {
   }
 }
 
-console.log(models)
+//console.log(models)
