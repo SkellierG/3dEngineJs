@@ -1,24 +1,29 @@
-const CANVAS = document.getElementById("canvas");
-const CONTEXT = CANVAS.getContext('2d');
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext('2d');
 
-const SCREEN = {
-  h: CANVAS.height,
-  w: CANVAS.width,
-  a: CANVAS.height / CANVAS.width
-};
+//constants
 
-let TIME_LAST = 0;
-let TIME_DELTA = 0;
+const FOV = 90;
+const Z_FAR = 10000;
+const Z_NEAR = 10;
+
+//variables
+
+let timeLast = 0;
+let timeDelta = 0;
 let angle = 0;
 
-let GLOBAL_ID = 0;
+let globalModelsId = 0;
 
-const FPS = 30;
-let FOV = 90;
-let Z_FAR = 10000;
-let Z_NEAR = 10;
+//objects
 
-let CAMERA = {
+const screen = {
+  h: canvas.height,
+  w: canvas.width,
+  a: canvas.height / canvas.width
+};
+
+const camera = {
   fovRadio: 1 / Math.tan( FOV / 2 ),
   zF: Z_FAR,
   zN: Z_NEAR,
@@ -28,14 +33,18 @@ let CAMERA = {
   z: 0
 }
 
-let MODELS = [];
+//3D models
 
-let MODELS_PROJECTION = [];
+let models = [];
 
-MODELS.push([
+let models_projection = [];
+
+//download models
+
+models.push([
     {
       //metadata
-      id: GLOBAL_ID++,
+      id: globalModelsId++,
       name: "CUBE",
       ver: null,
       desc: "un simple cubo"
@@ -62,15 +71,17 @@ MODELS.push([
     ]
 ]);
 
+//matrix
+
 let mathPer = {m: [[0,0,0,0],
                    [0,0,0,0],
                    [0,0,0,0],
                    [0,0,0,0]]
 };
-mathPer.m[0][0] = SCREEN.a * CAMERA.fovRadio;
-mathPer.m[1][1] = CAMERA.fovRadio;
-mathPer.m[2][2] = CAMERA.zD;
-mathPer.m[2][3] = -CAMERA.zD * CAMERA.zN;
+mathPer.m[0][0] = screen.a * camera.fovRadio;
+mathPer.m[1][1] = camera.fovRadio;
+mathPer.m[2][2] = camera.zD;
+mathPer.m[2][3] = -camera.zD * camera.zN;
 mathPer.m[3][3] = 1;
 
 let mathRot = {
@@ -90,9 +101,9 @@ let mathRot = {
       [0,0,0,0]]
 };
 
+//vectors and triangles
+
 function vec3(x, y, z, w) {
-  //console.count("vec3");
-  //console.log(x, y, z, w);
   if (w === undefined) {
     w = 1;
   }
@@ -119,6 +130,8 @@ function tri(ver1, ver2, ver3) {
   ];
 }
 
+//move models
+
 function makePerspective(vec) {
   let Fx = 0;
   let Fy = 0;
@@ -126,7 +139,6 @@ function makePerspective(vec) {
   let Fw = 0;
 
   let m = {...mathPer};
-  //console.log(m);
 
   Fx = vec.x * m.m[0][0] + vec.y * m.m[0][1] + vec.z * m.m[0][2] + m.m[0][3];
   Fy = vec.x * m.m[1][0] + vec.y * m.m[1][1] + vec.z * m.m[1][2] + m.m[1][3];
@@ -144,13 +156,11 @@ function makePerspective(vec) {
 }
 
 function mathRotX(vec) {
-  //console.log(vec);
   let Fx = 0;
   let Fy = 0;
   let Fz = 0;
 
   let m = {...mathRot};
-  //console.log(m);
 
   m.x[0][0] = 1;
   m.x[1][1] = Math.cos(angle * 0.5);
@@ -208,45 +218,24 @@ function mathRotZ(vec) {
   return resultC
 }
 
-function drawTriangle(trg, col) {
-  let x1 = trg[0].x;
-  let y1 = trg[0].y;
-  let x2 = trg[1].x;
-  let y2 = trg[1].y;
-  let x3 = trg[2].x;
-  let y3 = trg[2].y;
-
-  drawLine(x1, y1, x2, y2, col);
-  drawLine(x2, y2, x3, y3, col);
-  drawLine(x3, y3, x1, y1, col);
-}
-function drawLine(x1, y1, x2, y2, color) {
-  CONTEXT.strokeStyle = color
-  CONTEXT.beginPath();
-  CONTEXT.moveTo(x1, y1);
-  CONTEXT.lineTo(x2, y2);
-  CONTEXT.closePath();
-  CONTEXT.stroke();
-}
-
-function loadMODELS() {
-  for (let i = 0; i < MODELS.length; i++) {
-    MODELS_PROJECTION[i] = [MODELS[i][0], []];
-    MODELS[i][1].forEach((triangles)=>{
+function loadModels() {
+  for (let i = 0; i < models.length; i++) {
+    models_projection[i] = [models[i][0], []];
+    models[i][1].forEach((triangles)=>{
       let temp = Object.assign({}, triangles);
-      MODELS_PROJECTION[i][1].push(temp);
+      models_projection[i][1].push(temp);
     });
   }
 }
 
-function projMODELS() {
-  for (let i = 0; i < MODELS_PROJECTION.length; i++) {
-    MODELS_PROJECTION[i][0] = Object.assign({}, MODELS[i][0]);
-    for (let j = 0; j < MODELS_PROJECTION[i][1].length; j++) {
+function projModels() {
+  for (let i = 0; i < models_projection.length; i++) {
+    models_projection[i][0] = Object.assign({}, models[i][0]);
+    for (let j = 0; j < models_projection[i][1].length; j++) {
 
-      let triProj = MODELS_PROJECTION[i][1][j];
+      let triProj = models_projection[i][1][j];
 
-      //console.log(MODELS_PROJECTION[i][1][j]);
+      //console.log(models_projection[i][1][j]);
       //console.log(triProj);
 
       let tempTri0 = tri(triProj[0], triProj[1], triProj[2]);
@@ -273,7 +262,7 @@ function projMODELS() {
       ///console.count("tempTri0");
       //console.log(tempTri0);
 
-      MODELS_PROJECTION[i][1][j] = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
+      models_projection[i][1][j] = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
 
       let tempTri1 = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
       
@@ -285,9 +274,9 @@ function projMODELS() {
       tempTri1[1].x+=1; tempTri1[1].y+=1;
       tempTri1[2].x+=1; tempTri1[2].y+=1;
 
-      tempTri1[0].x*=0.5 * SCREEN.w; tempTri1[0].y*=0.5 * SCREEN.h;
-      tempTri1[1].x*=0.5 * SCREEN.w; tempTri1[1].y*=0.5 * SCREEN.h;
-      tempTri1[2].x*=0.5 * SCREEN.w; tempTri1[2].y*=0.5 * SCREEN.h;
+      tempTri1[0].x*=0.5 * screen.w; tempTri1[0].y*=0.5 * screen.h;
+      tempTri1[1].x*=0.5 * screen.w; tempTri1[1].y*=0.5 * screen.h;
+      tempTri1[2].x*=0.5 * screen.w; tempTri1[2].y*=0.5 * screen.h;
 
       drawTriangle(Object.assign({}, tempTri1), "#f22");
     };
@@ -295,21 +284,44 @@ function projMODELS() {
 }
 
 function drawFrame() {
-  CONTEXT.fillStyle = "#000";
-  CONTEXT.fillRect(0, 0, SCREEN.h, SCREEN.w);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, screen.h, screen.w);
 
-  projMODELS();
+  projModels();
 
 }
 
-loadMODELS();
+//draw functions
+
+function drawTriangle(trg, col) {
+  let x1 = trg[0].x;
+  let y1 = trg[0].y;
+  let x2 = trg[1].x;
+  let y2 = trg[1].y;
+  let x3 = trg[2].x;
+  let y3 = trg[2].y;
+
+  drawLine(x1, y1, x2, y2, col);
+  drawLine(x2, y2, x3, y3, col);
+  drawLine(x3, y3, x1, y1, col);
+}
+function drawLine(x1, y1, x2, y2, color) {
+  ctx.strokeStyle = color
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(x2, y2);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+
+loadModels();
 
 function animate(timeNow) {
   requestAnimationFrame(animate);
-  //console.log(MODELS_PROJECTION);
-  TIME_DELTA = timeNow - TIME_LAST;
-  angle = TIME_DELTA * 0.0001 * Math.PI * 2;
-  TIME_LAST = timeNow;
+  timeDelta = timeNow - timeLast;
+  angle = timeDelta * 0.0001 * Math.PI * 2;
+  timeLast = timeNow;
   if (angle <= 0 || angle >= 0) {
     drawFrame();
   }
