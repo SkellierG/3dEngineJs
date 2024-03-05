@@ -3,9 +3,11 @@ const ctx = canvas.getContext('2d');
 
 //constants
 
-const FOV = 90;
+const FOV = 91;
 const Z_FAR = 10000;
-const Z_NEAR = 10;
+const Z_NEAR = 100;
+const OBJ_FILE_COUNT = 1;
+let OBJ_FILE_COUNT_TIMES = 0;
 
 //variables
 
@@ -41,6 +43,43 @@ let models_projection = [];
 
 //download models
 
+function readTextFile(file) {
+  let rawFile = new XMLHttpRequest();
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = () => {
+    if (rawFile.readyState === 4) {
+      if (rawFile.status === 200 || rawFile.status == 0) {
+        let allText = rawFile.responseText;
+        loadOBJfile(allText);
+      }
+    }
+  }
+  rawFile.send(null);
+}
+
+function loadOBJfile(textInFile) {
+
+  const fileContents = textInFile
+  const objFile = new OBJFile(fileContents);
+  const output = objFile.parse();
+  //console.log(output.models[0]);
+  const tempMeta = {
+    id: globalModelsId++,
+    name: output.models[0].name,
+    desc: null
+  };
+  models[globalModelsId-1] = [Object.assign({}, tempMeta), []];
+  for (let i = 0; i < output.models[0].vertices.length; i += 3) {
+    models[globalModelsId-1][1].push(tri(
+      output.models[0].vertices[i],
+      output.models[0].vertices[i+1],
+      output.models[0].vertices[i+2]
+    ));
+  }
+  OBJ_FILE_COUNT_TIMES++
+}
+
+/*
 models.push([
     {
       //metadata
@@ -70,6 +109,7 @@ models.push([
       tri(vec3( -0, -0, -0 ), vec3( 1, -0, 1 ),   vec3( 1, -0, -0 ) ),
     ]
 ]);
+*/
 
 //matrix
 
@@ -174,7 +214,6 @@ function mathRotX(vec) {
 
   let result = vec3(Fx, Fy, Fz, vec.w)
   let resultC = Object.assign({}, result);
-  //console.log(resultC);
   return resultC
 }
 function mathRotY(vec) {
@@ -234,18 +273,12 @@ function projModels() {
     for (let j = 0; j < models_projection[i][1].length; j++) {
 
       let triProj = models_projection[i][1][j];
-
-      //console.log(models_projection[i][1][j]);
-      //console.log(triProj);
-
+      
       let tempTri0 = tri(triProj[0], triProj[1], triProj[2]);
-      //console.log(tempTri0);
 
       tempTri0[0] = mathRotX(tempTri0[0]);
       tempTri0[1] = mathRotX(tempTri0[1]);
       tempTri0[2] = mathRotX(tempTri0[2]);
-      //console.warn(triProj);
-      //console.log(triProj);
 
       tempTri0[0] = mathRotZ(tempTri0[0]);
       tempTri0[1] = mathRotZ(tempTri0[1]);
@@ -254,13 +287,6 @@ function projModels() {
       tempTri0[0] = mathRotY(tempTri0[0]);
       tempTri0[1] = mathRotY(tempTri0[1]);
       tempTri0[2] = mathRotY(tempTri0[2]);
-
-      //tempTri0[0].z += 0.01;
-      //tempTri0[1].z += 0.01;
-      //tempTri0[2].z += 0.01;
-
-      ///console.count("tempTri0");
-      //console.log(tempTri0);
 
       models_projection[i][1][j] = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
 
@@ -288,7 +314,6 @@ function drawFrame() {
   ctx.fillRect(0, 0, screen.h, screen.w);
 
   projModels();
-
 }
 
 //draw functions
@@ -314,8 +339,16 @@ function drawLine(x1, y1, x2, y2, color) {
   ctx.stroke();
 }
 
+for (let i = 0; i < OBJ_FILE_COUNT; i++) {
+  readTextFile(`model_${i}.obj`);
+}
 
-loadModels();
+//init engine
+if (OBJ_FILE_COUNT_TIMES >= OBJ_FILE_COUNT) {
+  loadModels();
+  animate();
+  //console.log(models_projection)
+}
 
 function animate(timeNow) {
   requestAnimationFrame(animate);
@@ -327,4 +360,4 @@ function animate(timeNow) {
   }
 }
 
-animate();
+console.log(models)
