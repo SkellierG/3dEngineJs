@@ -70,8 +70,8 @@ let mathPer = {m: [[0,0,0,0],
 mathPer.m[0][0] = SCREEN.a * CAMERA.fovRadio;
 mathPer.m[1][1] = CAMERA.fovRadio;
 mathPer.m[2][2] = CAMERA.zD;
-mathPer.m[3][2] = -CAMERA.zD * CAMERA.zN;
-mathPer.m[2][3] = 1;
+mathPer.m[2][3] = -CAMERA.zD * CAMERA.zN;
+mathPer.m[3][3] = 1;
 
 let mathRot = {
   x: [[0,0,0,0],
@@ -229,7 +229,7 @@ function drawLine(x1, y1, x2, y2, color) {
   CONTEXT.stroke();
 }
 
-function ProjMODELS() {
+function loadMODELS() {
   for (let i = 0; i < MODELS.length; i++) {
     MODELS_PROJECTION[i] = [MODELS[i][0], []];
     MODELS[i][1].forEach((triangles)=>{
@@ -239,9 +239,9 @@ function ProjMODELS() {
   }
 }
 
-function loadMODELS() {
+function projMODELS() {
   for (let i = 0; i < MODELS_PROJECTION.length; i++) {
-    MODELS_DUMMIE = [MODELS_PROJECTION[i][0], []];
+    MODELS_PROJECTION[i][0] = Object.assign({}, MODELS[i][0]);
     for (let j = 0; j < MODELS_PROJECTION[i][1].length; j++) {
 
       let triProj = MODELS_PROJECTION[i][1][j];
@@ -252,19 +252,23 @@ function loadMODELS() {
       let tempTri0 = tri(triProj[0], triProj[1], triProj[2]);
       //console.log(tempTri0);
 
-      //tempTri0[0] = mathRotX(tempTri0[0]);
-      //tempTri0[1] = mathRotX(tempTri0[1]);
-      //tempTri0[2] = mathRotX(tempTri0[2]);
+      tempTri0[0] = mathRotX(tempTri0[0]);
+      tempTri0[1] = mathRotX(tempTri0[1]);
+      tempTri0[2] = mathRotX(tempTri0[2]);
       //console.warn(triProj);
       //console.log(triProj);
 
-      //tempTri0[0] = mathRotZ(tempTri0[0]);
-      //tempTri0[1] = mathRotZ(tempTri0[1]);
-      //tempTri0[2] = mathRotZ(tempTri0[2]);
+      tempTri0[0] = mathRotZ(tempTri0[0]);
+      tempTri0[1] = mathRotZ(tempTri0[1]);
+      tempTri0[2] = mathRotZ(tempTri0[2]);
+      
+      tempTri0[0] = mathRotY(tempTri0[0]);
+      tempTri0[1] = mathRotY(tempTri0[1]);
+      tempTri0[2] = mathRotY(tempTri0[2]);
 
-      tempTri0[0].z += 0;
-      tempTri0[1].z += 0;
-      tempTri0[2].z += 0;
+      //tempTri0[0].z += 0.01;
+      //tempTri0[1].z += 0.01;
+      //tempTri0[2].z += 0.01;
 
       ///console.count("tempTri0");
       //console.log(tempTri0);
@@ -294,15 +298,15 @@ function drawFrame() {
   CONTEXT.fillStyle = "#000";
   CONTEXT.fillRect(0, 0, SCREEN.h, SCREEN.w);
 
-  loadMODELS();
+  projMODELS();
 
 }
 
-ProjMODELS();
+loadMODELS();
 
 function animate(timeNow) {
   requestAnimationFrame(animate);
-  //console.log(TIME_NOW);
+  //console.log(MODELS_PROJECTION);
   TIME_DELTA = timeNow - TIME_LAST;
   angle = TIME_DELTA * 0.0001 * Math.PI * 2;
   TIME_LAST = timeNow;
