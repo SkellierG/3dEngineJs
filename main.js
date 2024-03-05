@@ -41,20 +41,23 @@ let models = [];
 
 let models_projection = [];
 
+
 //download models
 
-function readTextFile(file) {
-  let rawFile = new XMLHttpRequest();
-  rawFile.open("GET", file, false);
-  rawFile.onreadystatechange = () => {
-    if (rawFile.readyState === 4) {
-      if (rawFile.status === 200 || rawFile.status == 0) {
+function readTextFile(FileName) {
+  let xhr = new XMLHttpRequest();
+  xhr.open('GET', FileName, true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      if (xhr.status === 200) {
         let allText = rawFile.responseText;
         loadOBJfile(allText);
+      } else {
+        console.log('Hubo un problema al leer el documento.');
       }
     }
-  }
-  rawFile.send(null);
+  };
+  xhr.send();
 }
 
 function loadOBJfile(textInFile) {
