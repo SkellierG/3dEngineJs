@@ -1,5 +1,23 @@
 {
   "dependencies": {
     "obj-file-parser": "^0.6.2"
-  }
+  },
+  "name": "3denginejs",
+  "version": "0.1.0",
+  "main": "main.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SkellierG/3dEngineJs.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SkellierG/3dEngineJs/issues"
+  },
+  "homepage": "https://github.com/SkellierG/3dEngineJs#readme",
+  "description": ""
 }

@@ -44,20 +44,18 @@ let models_projection = [];
 
 //download models
 
-function readTextFile(FileName) {
-  let xhr = new XMLHttpRequest();
-  xhr.open('GET', FileName, true);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-      if (xhr.status === 200) {
-        let allText = xhr.responseText;
+function readTextFile(file) {
+  let rawFile = new XMLHttpRequest();
+  rawFile.open("GET", file, false);
+  rawFile.onreadystatechange = () => {
+    if (rawFile.readyState === 4) {
+      if (rawFile.status === 200 || rawFile.status == 0) {
+        let allText = rawFile.responseText;
         loadOBJfile(allText);
-      } else {
-        console.log('Hubo un problema al leer el documento.');
       }
     }
-  };
-  xhr.send();
+  }
+  rawFile.send(null);
 }
 
 function loadOBJfile(textInFile) {
@@ -172,6 +170,21 @@ function tri(ver1, ver2, ver3) {
     {...ver3}
   ];
 }
+
+//normalize
+
+function normalizeVec(num1, num2, num3) {
+  let Fx = 0;
+  let Fy = 0;
+  let Fz = 0;
+
+  
+
+  let result = vec3(Fx, Fy, Fz, 1)
+  let resultC = Object.assign({}, result);
+  return resultC
+}
+
 
 //move models
 
