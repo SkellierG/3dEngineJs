@@ -3,7 +3,7 @@
     "obj-file-parser": "^0.6.2"
   },
   "name": "3denginejs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "main.js",
   "devDependencies": {},
   "scripts": {

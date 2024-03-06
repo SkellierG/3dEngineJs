@@ -3,10 +3,10 @@ const ctx = canvas.getContext('2d');
 
 //constants
 
-const FOV = 91;
+const FOV = 90;
 const Z_FAR = 10000;
-const Z_NEAR = 100;
-const OBJ_FILE_COUNT = 1;
+const Z_NEAR = 0.1;
+const OBJ_FILE_COUNT = 0; //change to 1
 let OBJ_FILE_COUNT_TIMES = 0;
 
 //variables
@@ -67,14 +67,16 @@ function loadOBJfile(textInFile) {
   const tempMeta = {
     id: globalModelsId++,
     name: output.models[0].name,
+    vertices: output.models[0].vertices.length,
+    faces: output.models[0].faces.length,
     desc: null
   };
   models[globalModelsId-1] = [Object.assign({}, tempMeta), []];
-  for (let i = 0; i < output.models[0].vertices.length; i += 3) {
+  for (let i = 0; i < output.models[0].faces.length; i++) {
     models[globalModelsId-1][1].push(tri(
-      output.models[0].vertices[i],
-      output.models[0].vertices[i+1],
-      output.models[0].vertices[i+2]
+      output.models[0].vertices[output.models[0].faces[i].vertices[0].vertexIndex - 1],
+      output.models[0].vertices[output.models[0].faces[i].vertices[1].vertexIndex - 1],
+      output.models[0].vertices[output.models[0].faces[i].vertices[2].vertexIndex - 1]
     ));
   }
   OBJ_FILE_COUNT_TIMES++
@@ -173,12 +175,19 @@ function tri(ver1, ver2, ver3) {
 
 //normalize
 
-function normalizeVec(num1, num2, num3) {
+function normalizeVec(x, y, z) {
   let Fx = 0;
   let Fy = 0;
   let Fz = 0;
+  let Fw = 0;
 
-  
+  Fw = Math.sqrt( x * x + y * y + z * z );
+
+  if (Fw !== 0) {
+    Fx = x / Fw;
+    Fy = y / Fw;
+    Fz = z / Fw;
+  }
 
   let result = vec3(Fx, Fy, Fz, 1)
   let resultC = Object.assign({}, result);
@@ -304,6 +313,10 @@ function projModels() {
       tempTri0[1] = mathRotY(tempTri0[1]);
       tempTri0[2] = mathRotY(tempTri0[2]);
 
+      //tempTri0[0].z += 0.1;
+      //tempTri0[1].z += 0.1;
+      //tempTri0[2].z += 0.1;
+
       models_projection[i][1][j] = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
 
       let tempTri1 = tri(tempTri0[0], tempTri0[1], tempTri0[2]);
@@ -369,7 +382,7 @@ if (OBJ_FILE_COUNT_TIMES >= OBJ_FILE_COUNT) {
 function animate(timeNow) {
   requestAnimationFrame(animate);
   timeDelta = timeNow - timeLast;
-  angle = timeDelta * 0.0001 * Math.PI * 2;
+  angle = timeDelta * 0.00001 * Math.PI * 2;
   timeLast = timeNow;
   if (angle <= 0 || angle >= 0) {
     drawFrame();
