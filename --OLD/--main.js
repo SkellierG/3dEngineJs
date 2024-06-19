@@ -6,7 +6,7 @@ const ctx = canvas.getContext('2d');
 const FOV = 90;
 const Z_FAR = 10000;
 const Z_NEAR = 0.1;
-const OBJ_FILE_COUNT = 0; //change to 1
+const OBJ_FILE_COUNT = 1; //change to 1
 let OBJ_FILE_COUNT_TIMES = 0;
 
 //variables
