@@ -1,13 +1,10 @@
 import express from 'express';
 import os from 'os';
-import fileRoutes from './fileRoutes.js';
 
 const app = express();
 const port = 8080;
 
 app.use(express.static('./public'));
-
-app.use('/api', fileRoutes);
 
 function getLocalIp() {
   const interfaces = os.networkInterfaces();
@@ -28,4 +25,4 @@ function startServer(){
     });
 }
 
-export default startServer;
+export default startServer
